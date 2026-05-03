@@ -1,0 +1,88 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --soil:       #2C1810;
+  --bark:       #4A2E1A;
+  --moss:       #3D5A2E;
+  --leaf:       #5C8A3C;
+  --sprout:     #7DB55A;
+  --mist:       #F0EDE6;
+  --cream:      #FAF8F3;
+  --sand:       #E8E0D0;
+  --gold:       #C8A84B;
+  --rust:       #A0522D;
+  --text-dark:  #1A120A;
+  --text-mid:   #4A3728;
+  --text-light: #8A7060;
+  --shadow-sm:  0 2px 8px rgba(44,24,16,0.08);
+  --shadow-md:  0 4px 20px rgba(44,24,16,0.12);
+  --shadow-lg:  0 8px 40px rgba(44,24,16,0.18);
+  --radius:     12px;
+  --radius-lg:  20px;
+  --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  background: var(--cream);
+  color: var(--text-dark);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', serif;
+  line-height: 1.2;
+}
+
+a { text-decoration: none; color: inherit; }
+
+button {
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input, select {
+  font-family: 'DM Sans', sans-serif;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--sand); }
+::-webkit-scrollbar-thumb { background: var(--leaf); border-radius: 3px; }
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes growBar {
+  from { width: 0; }
+  to   { width: var(--target-width); }
+}
+
+.fade-up  { animation: fadeUp 0.5s ease both; }
+.fade-in  { animation: fadeIn 0.4s ease both; }
+
+/* Stagger delays */
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.10s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.20s; }
+.delay-5 { animation-delay: 0.25s; }
