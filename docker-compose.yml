@@ -1,35 +1,17 @@
 # docker-compose.yml
-# ------------------
-# Wires all Phase 3 services together.
 # Run everything: docker compose up --build
 #
 # Services:
-#   postgres      — PostgreSQL 16
-#   ml-service    — Phase 2 FastAPI ML microservice (port 8000)
-#   backend       — Phase 3 main backend (port 8001)
+#   ml-service  → port 8000  (ML microservice)
+#   backend     → port 8001  (main API + PostgreSQL)
+#   frontend    → port 80    (React via nginx)
+#
+# PostgreSQL: uses Neon (cloud) — no local postgres container needed.
+# Set your real values in a .env file at repo root.
 
 version: "3.9"
 
 services:
-
-  # ── PostgreSQL ──────────────────────────────────────────────────────────────
-  postgres:
-    image: postgres:16-alpine
-    container_name: cropsense-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: cropsense
-      POSTGRES_PASSWORD: cropsense
-      POSTGRES_DB: cropsense
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cropsense -d cropsense"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # ── ML Microservice (Phase 2) ───────────────────────────────────────────────
   ml-service:
@@ -41,7 +23,6 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Mount trained artifacts so container uses latest model without rebuild
       - ./models:/app/models
       - ./outputs:/app/outputs
     environment:
@@ -52,9 +33,6 @@ services:
       timeout: 5s
       start_period: 15s
       retries: 3
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   # ── Main Backend (Phase 3) ──────────────────────────────────────────────────
   backend:
@@ -65,9 +43,10 @@ services:
     restart: unless-stopped
     ports:
       - "8001:8001"
+    env_file:
+      - .env                          # reads DATABASE_URL, etc. from your .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://cropsense:cropsense@postgres:5432/cropsense
-      ML_SERVICE_URL: http://ml-service:8000
+      ML_SERVICE_URL: http://ml-service:8000   # internal Docker network name
       BACKEND_PORT: 8001
       CORS_ORIGINS: "*"
     healthcheck:
@@ -77,10 +56,24 @@ services:
       start_period: 20s
       retries: 3
     depends_on:
-      postgres:
-        condition: service_healthy
       ml-service:
         condition: service_healthy
 
-volumes:
-  postgres_data:
+  # ── Frontend (Phase 4) ──────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: cropsense-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    depends_on:
+      backend:
+        condition: service_healthy
