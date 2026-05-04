@@ -1,0 +1,155 @@
+{
+  "title": "CropSense Overview",
+  "uid": "cropsense-main",
+  "version": 1,
+  "schemaVersion": 36,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request Rate — ML Service (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [{
+        "expr": "rate(http_requests_total{job=\"ml-service\"}[1m])",
+        "legendFormat": "{{method}} {{handler}} {{status_code}}"
+      }],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "reqps" }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Request Rate — Backend (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [{
+        "expr": "rate(http_requests_total{job=\"backend\"}[1m])",
+        "legendFormat": "{{method}} {{handler}} {{status_code}}"
+      }],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "reqps" }
+      }
+    },
+    {
+      "id": 3,
+      "title": "P50 / P95 / P99 Latency — ML Service",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"ml-service\"}[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"ml-service\"}[1m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"ml-service\"}[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "s" }
+      }
+    },
+    {
+      "id": 4,
+      "title": "P50 / P95 / P99 Latency — Backend",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"backend\"}[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"backend\"}[1m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"backend\"}[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "s" }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Error Rate — ML Service (5xx/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 16, "w": 8, "h": 7 },
+      "targets": [{
+        "expr": "rate(http_requests_total{job=\"ml-service\", status_code=~\"5..\"}[1m])",
+        "legendFormat": "5xx errors/s"
+      }],
+      "fieldConfig": {
+        "defaults": { "color": { "fixedColor": "red", "mode": "fixed" }, "unit": "reqps" }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Error Rate — Backend (5xx/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 16, "w": 8, "h": 7 },
+      "targets": [{
+        "expr": "rate(http_requests_total{job=\"backend\", status_code=~\"5..\"}[1m])",
+        "legendFormat": "5xx errors/s"
+      }],
+      "fieldConfig": {
+        "defaults": { "color": { "fixedColor": "red", "mode": "fixed" }, "unit": "reqps" }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Total Requests",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 16, "w": 8, "h": 7 },
+      "targets": [{
+        "expr": "sum(http_requests_total)",
+        "legendFormat": "Total"
+      }],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "unit": "short",
+          "thresholds": { "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 1000 },
+            { "color": "red", "value": 10000 }
+          ]}
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Requests by Endpoint — ML Service",
+      "type": "bargauge",
+      "gridPos": { "x": 0, "y": 23, "w": 12, "h": 8 },
+      "targets": [{
+        "expr": "sum by (handler) (http_requests_total{job=\"ml-service\"})",
+        "legendFormat": "{{handler}}"
+      }],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      },
+      "options": { "orientation": "horizontal" }
+    },
+    {
+      "id": 9,
+      "title": "Requests by Endpoint — Backend",
+      "type": "bargauge",
+      "gridPos": { "x": 12, "y": 23, "w": 12, "h": 8 },
+      "targets": [{
+        "expr": "sum by (handler) (http_requests_total{job=\"backend\"})",
+        "legendFormat": "{{handler}}"
+      }],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      },
+      "options": { "orientation": "horizontal" }
+    }
+  ]
+}

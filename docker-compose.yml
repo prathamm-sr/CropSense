@@ -2,18 +2,15 @@
 # Run everything: docker compose up --build
 #
 # Services:
-#   ml-service  → port 8000  (ML microservice)
-#   backend     → port 8001  (main API + PostgreSQL)
-#   frontend    → port 80    (React via nginx)
-#
-# PostgreSQL: uses Neon (cloud) — no local postgres container needed.
-# Set your real values in a .env file at repo root.
-
-version: "3.9"
+#   ml-service   → port 8000  (ML microservice)
+#   backend      → port 8001  (main API)
+#   frontend     → port 80    (React via nginx)
+#   prometheus   → port 9090  (metrics scraper)
+#   grafana      → port 3001  (dashboards)
 
 services:
 
-  # ── ML Microservice (Phase 2) ───────────────────────────────────────────────
+  # ── ML Microservice ─────────────────────────────────────────────────────────
   ml-service:
     build:
       context: .
@@ -34,7 +31,7 @@ services:
       start_period: 15s
       retries: 3
 
-  # ── Main Backend (Phase 3) ──────────────────────────────────────────────────
+  # ── Main Backend ─────────────────────────────────────────────────────────────
   backend:
     build:
       context: .
@@ -44,9 +41,9 @@ services:
     ports:
       - "8001:8001"
     env_file:
-      - .env                          # reads DATABASE_URL, etc. from your .env
+      - .env
     environment:
-      ML_SERVICE_URL: http://ml-service:8000   # internal Docker network name
+      ML_SERVICE_URL: http://ml-service:8000
       BACKEND_PORT: 8001
       CORS_ORIGINS: "*"
     healthcheck:
@@ -59,7 +56,7 @@ services:
       ml-service:
         condition: service_healthy
 
-  # ── Frontend (Phase 4) ──────────────────────────────────────────────────────
+  # ── Frontend ─────────────────────────────────────────────────────────────────
   frontend:
     build:
       context: .
@@ -77,3 +74,44 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+
+  # ── Prometheus ───────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: cropsense-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"
+      - "--web.enable-lifecycle"     # allows hot-reload via POST /-/reload
+    depends_on:
+      - ml-service
+      - backend
+
+  # ── Grafana ──────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: cropsense-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: cropsense
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/cropsense.json
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus_data:
+  grafana_data:
