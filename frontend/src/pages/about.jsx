@@ -9,6 +9,8 @@ const STACK = [
   { layer: 'DevOps',        tech: 'Docker · Docker Compose · GitHub Actions', icon: '🐳', color: '#4A7C59' },
 ]
 
+"model performance metrics"
+
 const METRICS = [
   { label: 'Accuracy',    value: '~99.3%' },
   { label: 'F1 Macro',    value: '~99.3%' },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import { getStats } from '../api/client'
 
+"colors"
 const COLORS = ['#3D5A2E','#5C8A3C','#7DB55A','#C8A84B','#A0522D','#6B8E6B','#8FBC8F','#4A7C59','#2E5B3D','#9CB08A']
 
 function StatCard({ label, value, sub, icon }) {

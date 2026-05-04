@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { getHistory, deletePrediction } from '../api/client'
 
+"emojis"
 const CROP_EMOJI = {
   rice:'🌾',maize:'🌽',chickpea:'🫘',kidneybeans:'🫘',pigeonpeas:'🌿',
   mothbeans:'🌱',mungbean:'🌱',blackgram:'🫘',lentil:'🫘',pomegranate:'🍈',

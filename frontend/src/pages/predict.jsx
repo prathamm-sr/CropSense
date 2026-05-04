@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { predictCrop } from '../api/client'
 
+"fields"
 const FIELDS = [
   { key: 'N',           label: 'Nitrogen (N)',     unit: 'kg/ha', min: 0,   max: 140, step: 1,   default: 90,    desc: 'Ratio of Nitrogen content in soil' },
   { key: 'P',           label: 'Phosphorous (P)',  unit: 'kg/ha', min: 5,   max: 145, step: 1,   default: 42,    desc: 'Ratio of Phosphorous content in soil' },

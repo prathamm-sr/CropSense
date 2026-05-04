@@ -5,6 +5,7 @@ import History from './pages/History'
 import Stats from './pages/Stats'
 import About from './pages/About'
 
+"Main App" 
 const NAV = [
   { to: '/',        label: 'Predict',  icon: '🌱' },
   { to: '/history', label: 'History',  icon: '📋' },
