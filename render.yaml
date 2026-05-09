@@ -1,0 +1,57 @@
+# render.yaml
+# Render Blueprint — defines all services declaratively.
+# Connect your GitHub repo to Render and it reads this file automatically.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+
+  # ── ML Microservice ─────────────────────────────────────────────────────────
+  - type: web
+    name: cropsense-ml-service
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    autoDeploy: true   # re-deploys when CD pushes new image
+
+  # ── Main Backend ─────────────────────────────────────────────────────────────
+  - type: web
+    name: cropsense-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false        # set manually in Render dashboard — never commit
+      - key: ML_SERVICE_URL
+        fromService:
+          name: cropsense-ml-service
+          type: web
+          property: host   # Render injects internal URL automatically
+      - key: BACKEND_PORT
+        value: 8001
+      - key: CORS_ORIGINS
+        value: "*"
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+  - type: web
+    name: cropsense-frontend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.frontend
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: cropsense-backend
+          type: web
+          property: host
+    healthCheckPath: /health
+    autoDeploy: true
